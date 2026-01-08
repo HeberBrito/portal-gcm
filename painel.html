@@ -3,115 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Servidor - GCM</title>
+    <title>Painel do Servidor - GCM Salvador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #1a2a6c; --accent: #fdbb2d; --glass: rgba(255, 255, 255, 0.15); }
+        
         body {
             margin: 0; font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/fundo.jpg');
             background-size: cover; background-attachment: fixed; color: white; min-height: 100vh;
-        }
-        nav { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; }
-        
-        .container { padding: 2rem 5%; }
-        
-        /* BUSCA COM IA */
-        .search-container { margin-bottom: 3rem; text-align: center; }
-        .search-bar {
-            width: 100%; max-width: 600px; padding: 1.2rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1); color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px);
+            overflow-x: hidden;
         }
 
-        /* CARDS COM HOVER REVELADOR */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-        .card {
-            background: var(--glass); backdrop-filter: blur(15px); padding: 2rem; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.4s; text-align: center;
-            position: relative; overflow: hidden;
+        /* BARRA DE NAVEGAÇÃO */
+        nav {
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
+            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100;
         }
-        .card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
-        .card i { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
+        .user-info h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .user-info p { margin: 0; font-size: 0.8rem; opacity: 0.7; }
+        .btn-logout { 
+            background: rgba(255, 75, 43, 0.2); color: #ff4b2b; border: 1px solid #ff4b2b; 
+            padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .btn-logout:hover { background: #ff4b2b; color: white; }
+
+        .container { padding: 2rem 5%; max-width: 1200px; margin: auto; }
+
+        /* BUSCA INTELIGENTE */
+        .search-container { margin-bottom: 3rem; text-align: center; }
+        .search-bar {
+            width: 100%; max-width: 600px; padding: 1.2rem 2rem; border-radius: 50px; 
+            border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); 
+            color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px);
+            transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .search-bar:focus { border-color: var(--accent); background: rgba(255,255,255,0.2); width: 105%; }
+
+        /* GRID DE CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
         
-        .card .details { 
-            max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; color: #ddd; 
+        .card {
+            background: var(--glass); backdrop-filter: blur(15px); padding: 2.5rem 2rem; 
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); 
+            cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        .card:hover { transform: translateY(-12px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
+        .card i { font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem; transition: 0.3s; }
+        .card h3 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+        
+        /* Detalhes que aparecem no Hover */
+        .details { 
+            max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; 
+            color: #eee; margin-top: 0; line-height: 1.4;
         }
         .card:hover .details { max-height: 100px; opacity: 1; margin-top: 15px; }
 
-        /* MODAL SAÍDA */
+        /* MODAL DE SAÍDA */
         #modalSair {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center;
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center;
         }
-        .modal-box { background: white; color: #333; padding: 2rem; border-radius: 20px; text-align: center; max-width: 350px; }
-        .btn-flex { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-confirm { background: #ff4b2b; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold; }
-        .btn-cancel { background: #ccc; color: #333; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; }
+        .modal-box { background: white; color: #333; padding: 2.5rem; border-radius: 24px; text-align: center; max-width: 350px; width: 85%; }
+        .btn-flex { display: flex; gap: 12px; margin-top: 25px; }
+        .btn-confirm { background: #ff4b2b; color: white; border: none; padding: 12px; border-radius: 12px; flex: 1; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #eee; color: #333; border: none; padding: 12px; border-radius: 12px; flex: 1; cursor: pointer; }
+
+        @keyframes fadeInCard {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <nav>
-        <div>
+        <div class="user-info">
             <h2 id="userName">CARREGANDO...</h2>
-            <p id="userMatricula" style="font-size: 0.8rem; opacity: 0.7;">MATRÍCULA: ---</p>
+            <p id="userMatricula">MATRÍCULA: ---</p>
         </div>
-        <button onclick="abrirModalSair()" style="background:rgba(255,255,255,0.1); border:1px solid white; color:white; padding:8px 15px; border-radius:8px; cursor:pointer;">SAIR</button>
+        <button class="btn-logout" id="btnSairNav">SAIR</button>
     </nav>
 
     <div class="container">
         <div class="search-container">
-            <input type="text" class="search-bar" placeholder="🔍 Olá, o que você deseja solicitar hoje? (Ex: Férias, Abono...)">
-            <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">Nossa IA ajudará a encontrar o formulário correto.</p>
+            <input type="text" id="searchInput" class="search-bar" placeholder="🔍 O que você deseja solicitar hoje?">
+            <p style="font-size: 0.85rem; margin-top: 15px; opacity: 0.7;">Ex: "Férias", "Abono", "Dinheiro", "Saúde"...</p>
         </div>
 
-        <div class="grid">
-            <div class="card">
+        <div class="grid" id="gridCards">
+            <div class="card" data-tags="abono permanencia adiantamento gratificacao auxilio transporte dinheiro financeiro rdv rda">
                 <i class="fas fa-money-bill-wave"></i>
                 <h3>Financeiro</h3>
-                <div class="details">Abono de permanência, Adiantamentos, Gratificações e Auxílio Transporte.</div>
+                <div class="details">Solicite Abono de Permanência, Adiantamentos, Gratificações e Auxílios.</div>
             </div>
-            <div class="card">
+
+            <div class="card" data-tags="progressao licenca vacancia estagio probatorio promocao carreira curso exoneração">
                 <i class="fas fa-id-card"></i>
                 <h3>Carreira</h3>
-                <div class="details">Progressões, Licenças, Vacância, Estágio Probatório e Promoções.</div>
+                <div class="details">Progressões, Licenças Especiais, Vacância e Estágio Probatório.</div>
             </div>
-            <div class="card">
+
+            <div class="card" data-tags="saude medico afastamento licenca premio hospital atestado rdv rda acompanhamento">
                 <i class="fas fa-heartbeat"></i>
                 <h3>Saúde</h3>
-                <div class="details">Licença prêmio, Afastamentos médicos e Saúde do servidor.</div>
+                <div class="details">Licença prêmio, Afastamentos médicos e Saúde do Servidor.</div>
             </div>
-            <div class="card">
+
+            <div class="card" data-tags="geral ia duvida outros requerimento ajuda rdv rda">
                 <i class="fas fa-magic"></i>
                 <h3>IA / Geral</h3>
-                <div class="details">Não encontrou? Descreva aqui e eu preencho o formulário de Solicitação Geral.</div>
+                <div class="details">Descreva sua necessidade em texto livre e eu preencho o formulário para você.</div>
             </div>
         </div>
     </div>
 
     <div id="modalSair">
         <div class="modal-box">
-            <h3>Encerrar Sessão?</h3>
-            <p>Você terá que digitar sua matrícula e CPF novamente para acessar.</p>
+            <i class="fas fa-sign-out-alt" style="font-size: 3rem; color: #ff4b2b; margin-bottom: 1rem;"></i>
+            <h3 style="margin:0">Encerrar Sessão?</h3>
+            <p style="opacity: 0.7;">Você precisará entrar com sua matrícula e CPF novamente.</p>
             <div class="btn-flex">
-                <button class="btn-cancel" onclick="fecharModalSair()">CANCELAR</button>
-                <button class="btn-confirm" id="confirmarLogout">SAIR AGORA</button>
+                <button class="btn-cancel" id="btnCancelarSair">VOLTAR</button>
+                <button class="btn-confirm" id="btnConfirmarSair">SAIR AGORA</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // ... (Imports do Firebase iguais)
-        
-        // LOGICA DO MODAL DE SAÍDA
-        window.abrirModalSair = () => document.getElementById('modalSair').style.display = 'flex';
-        window.fecharModalSair = () => document.getElementById('modalSair').style.display = 'none';
-        
-        document.getElementById('confirmarLogout').onclick = () => {
-            signOut(auth).then(() => window.location.href = "index.html");
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
+            authDomain: "gcm-salvador-portal.firebaseapp.com",
+            projectId: "gcm-salvador-portal",
+            storageBucket: "gcm-salvador-portal.firebasestorage.app",
+            messagingSenderId: "578659251170",
+            appId: "1:578659251170:web:7b79771e794a37f8fcffbb"
         };
 
-        // ... (onAuthStateChanged igual)
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // BUSCA EM TEMPO REAL
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.card');
+
+        searchInput.addEventListener('input', (e) => {
+            const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            cards.forEach(card => {
+                const tags = card.getAttribute('data-tags');
+                const titulo = card.querySelector('h3').innerText.toLowerCase();
+                if (tags.includes(termo) || titulo.includes(termo)) {
+                    card.style.display = "flex";
+                    card.style.animation = "fadeInCard 0.4s ease forwards";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+
+        // IDENTIFICAÇÃO DO USUÁRIO
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const mat = user.email.split('@')[0];
+                try {
+                    const snap = await getDoc(doc(db, "servidores", mat));
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        document.getElementById('userName').innerText = `OLÁ, ${d.nome_completo ? d.nome_completo.split(' ')[0] : 'SERVIDOR'}`;
+                        document.getElementById('userMatricula').innerText = `MATRÍCULA: ${mat}`;
+                    }
+                } catch (e) { console.error("Erro ao buscar dados:", e); }
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // LÓGICA DO MODAL DE SAÍDA
+        const modal = document.getElementById('modalSair');
+        document.getElementById('btnSairNav').onclick = () => modal.style.display = 'flex';
+        document.getElementById('btnCancelarSair').onclick = () => modal.style.display = 'none';
+        document.getElementById('btnConfirmarSair').onclick = () => {
+            signOut(auth).then(() => window.location.href = "index.html");
+        };
     </script>
 </body>
 </html>
