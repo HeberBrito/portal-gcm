@@ -7,62 +7,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #1a2a6c; --accent: #fdbb2d; --glass: rgba(255, 255, 255, 0.15); }
-        
-        body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/fundo.jpg');
-            background-size: cover; background-attachment: fixed; color: white; min-height: 100vh;
-        }
-
-        /* NAVEGAÇÃO */
-        nav {
-            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
-            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100;
-        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/fundo.jpg'); background-size: cover; background-attachment: fixed; color: white; min-height: 100vh; }
+        nav { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100; }
         .user-info h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; }
         .user-info p { margin: 0; font-size: 0.8rem; opacity: 0.7; }
-        
-        .btn-logout { 
-            background: rgba(255, 75, 43, 0.1); color: #ff4b2b; border: 1px solid #ff4b2b; 
-            padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold;
-        }
-
+        .btn-logout { background: rgba(255, 75, 43, 0.1); color: #ff4b2b; border: 1px solid #ff4b2b; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .container { padding: 2rem 5%; max-width: 1200px; margin: auto; }
-
-        /* BUSCA */
         .search-container { margin-bottom: 3rem; text-align: center; }
-        .search-bar {
-            width: 100%; max-width: 600px; padding: 1.2rem 2rem; border-radius: 50px; 
-            border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); 
-            color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px);
-        }
-
-        /* GRID */
+        .search-bar { width: 100%; max-width: 600px; padding: 1.2rem 2rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
-        
-        .card {
-            background: var(--glass); backdrop-filter: blur(15px); padding: 2.5rem 2rem; 
-            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); 
-            cursor: pointer; transition: 0.4s; text-align: center;
-        }
+        .card { background: var(--glass); backdrop-filter: blur(15px); padding: 2.5rem 2rem; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.4s; text-align: center; }
         .card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
         .card i { font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem; }
-        
         .details { max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; color: #eee; overflow: hidden; }
         .card:hover .details { max-height: 100px; opacity: 1; margin-top: 15px; }
-
-        /* OVERLAY DE CARREGAMENTO */
-        #loadingOverlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 3000; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        /* MODAL SAÍDA */
-        #modalSair {
-            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center;
-        }
+        #loadingOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        #modalSair { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
         .modal-box { background: white; color: #333; padding: 2rem; border-radius: 24px; text-align: center; max-width: 350px; width: 85%; }
         .btn-flex { display: flex; gap: 10px; margin-top: 20px; }
         .btn-confirm { background: #ff4b2b; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; }
@@ -73,7 +33,7 @@
 
     <div id="loadingOverlay">
         <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--accent);"></i>
-        <p style="margin-top: 15px;">Gerando seu RDV preenchido...</p>
+        <p style="margin-top: 15px;">Preenchendo formulário RDV...</p>
     </div>
 
     <nav>
@@ -86,28 +46,24 @@
 
     <div class="container">
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-bar" placeholder="🔍 O que você deseja solicitar hoje?">
+            <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Qual formulário você precisa?">
         </div>
-
         <div class="grid" id="gridCards">
             <div class="card" id="cardFinanceiro" data-tags="rdv financeiro abono adiantamento rda">
                 <i class="fas fa-money-bill-wave"></i>
                 <h3>Financeiro / RDV</h3>
                 <div class="details">Gere seu RDV preenchido para Abonos, Férias ou Adiantamentos.</div>
             </div>
-
             <div class="card" data-tags="carreira progressao promocao">
                 <i class="fas fa-id-card"></i>
                 <h3>Carreira</h3>
                 <div class="details">Progressões e Estágio Probatório.</div>
             </div>
-
             <div class="card" data-tags="saude medico atestado">
                 <i class="fas fa-heartbeat"></i>
                 <h3>Saúde</h3>
                 <div class="details">Afastamentos e Atestados.</div>
             </div>
-
             <div class="card" data-tags="ia geral outros">
                 <i class="fas fa-magic"></i>
                 <h3>IA / Geral</h3>
@@ -130,7 +86,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { PDFDocument } from 'https://cdn.skypack.dev/pdf-lib';
+        import { PDFDocument, rgb } from 'https://cdn.skypack.dev/pdf-lib';
 
         const firebaseConfig = {
             apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
@@ -160,7 +116,7 @@
         });
 
         async function gerarRDV() {
-            if (!dadosServidor) return alert("Aguarde o carregamento dos dados...");
+            if (!dadosServidor) return alert("Erro: Dados não carregados!");
             document.getElementById('loadingOverlay').style.display = 'flex';
 
             try {
@@ -170,25 +126,36 @@
                 const page = pdfDoc.getPages()[0];
                 const { height } = page.getSize();
 
-                // COORDENADAS AJUSTADAS
-                const size = 10;
-                page.drawText(dadosServidor.nome_completo || "", { x: 100, y: height - 153, size });
-                page.drawText(dadosServidor.matricula || "", { x: 475, y: height - 153, size });
-                page.drawText(dadosServidor.cpf || "", { x: 100, y: height - 171, size });
-                page.drawText(dadosServidor.mae || "", { x: 100, y: height - 189, size });
-                if(dadosServidor.data_admissao) page.drawText(dadosServidor.data_admissao, { x: 475, y: height - 189, size });
+                const fontSize = 10;
+                const color = rgb(0, 0, 0);
+
+                // --- AJUSTE FINO DE COORDENADAS ---
+                // Nome
+                page.drawText(dadosServidor.nome_completo || "", { x: 145, y: height - 156, size: fontSize, color });
+                // Matrícula
+                page.drawText(dadosServidor.matricula || "", { x: 480, y: height - 156, size: fontSize, color });
+                // CPF
+                page.drawText(dadosServidor.cpf || "", { x: 105, y: height - 175, size: fontSize, color });
+                // Mãe
+                page.drawText(dadosServidor.mae || "", { x: 105, y: height - 194, size: fontSize, color });
+                // Admissão
+                if(dadosServidor.data_admissao) {
+                    page.drawText(dadosServidor.data_admissao, { x: 475, y: height - 194, size: fontSize, color });
+                }
 
                 const pdfBytes = await pdfDoc.save();
                 const blob = new Blob([pdfBytes], { type: "application/pdf" });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `RDV_${dadosServidor.matricula}.pdf`;
+                link.download = `RDV_PREENCHIDO_${dadosServidor.matricula}.pdf`;
                 link.click();
-            } catch (e) { alert("Erro ao gerar PDF. Verifique se assets/RDV.pdf existe."); }
-            finally { document.getElementById('loadingOverlay').style.display = 'none'; }
+            } catch (e) {
+                alert("Erro ao gerar PDF: Certifique-se que o arquivo assets/RDV.pdf existe.");
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
 
-        // BUSCA
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const t = e.target.value.toLowerCase();
             document.querySelectorAll('.card').forEach(c => {
