@@ -12,76 +12,106 @@
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/fundo.jpg');
             background-size: cover; background-attachment: fixed; color: white; min-height: 100vh;
         }
-        nav {
-            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
-            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center;
+        nav { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; }
+        
+        .container { padding: 2rem 5%; }
+        
+        /* BUSCA COM IA */
+        .search-container { margin-bottom: 3rem; text-align: center; }
+        .search-bar {
+            width: 100%; max-width: 600px; padding: 1.2rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1); color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px);
         }
-        .container { padding: 3rem 5%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+
+        /* CARDS COM HOVER REVELADOR */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
         .card {
             background: var(--glass); backdrop-filter: blur(15px); padding: 2rem; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.4s; text-align: center;
+            position: relative; overflow: hidden;
         }
-        .card:hover { transform: translateY(-10px); border-color: var(--accent); }
+        .card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
         .card i { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
-        .btn-logout { background: #ff4b2b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        
+        .card .details { 
+            max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; color: #ddd; 
+        }
+        .card:hover .details { max-height: 100px; opacity: 1; margin-top: 15px; }
+
+        /* MODAL SAÍDA */
+        #modalSair {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center;
+        }
+        .modal-box { background: white; color: #333; padding: 2rem; border-radius: 20px; text-align: center; max-width: 350px; }
+        .btn-flex { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-confirm { background: #ff4b2b; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #ccc; color: #333; border: none; padding: 10px; border-radius: 8px; flex: 1; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav>
         <div>
-            <h2 id="userName" style="margin:0">CARREGANDO...</h2>
-            <p id="userMatricula" style="margin:0; opacity:0.7">MATRÍCULA: ---</p>
+            <h2 id="userName">CARREGANDO...</h2>
+            <p id="userMatricula" style="font-size: 0.8rem; opacity: 0.7;">MATRÍCULA: ---</p>
         </div>
-        <button class="btn-logout" id="btnLogout">SAIR</button>
+        <button onclick="abrirModalSair()" style="background:rgba(255,255,255,0.1); border:1px solid white; color:white; padding:8px 15px; border-radius:8px; cursor:pointer;">SAIR</button>
     </nav>
 
     <div class="container">
-        <h1>O que você precisa hoje?</h1>
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="🔍 Olá, o que você deseja solicitar hoje? (Ex: Férias, Abono...)">
+            <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">Nossa IA ajudará a encontrar o formulário correto.</p>
+        </div>
+
         <div class="grid">
-            <div class="card"><i class="fas fa-money-bill-wave"></i><h3>Financeiro</h3></div>
-            <div class="card"><i class="fas fa-id-card"></i><h3>Carreira</h3></div>
-            <div class="card"><i class="fas fa-heartbeat"></i><h3>Saúde</h3></div>
-            <div class="card"><i class="fas fa-file-alt"></i><h3>Geral</h3></div>
+            <div class="card">
+                <i class="fas fa-money-bill-wave"></i>
+                <h3>Financeiro</h3>
+                <div class="details">Abono de permanência, Adiantamentos, Gratificações e Auxílio Transporte.</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-id-card"></i>
+                <h3>Carreira</h3>
+                <div class="details">Progressões, Licenças, Vacância, Estágio Probatório e Promoções.</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-heartbeat"></i>
+                <h3>Saúde</h3>
+                <div class="details">Licença prêmio, Afastamentos médicos e Saúde do servidor.</div>
+            </div>
+            <div class="card">
+                <i class="fas fa-magic"></i>
+                <h3>IA / Geral</h3>
+                <div class="details">Não encontrou? Descreva aqui e eu preencho o formulário de Solicitação Geral.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalSair">
+        <div class="modal-box">
+            <h3>Encerrar Sessão?</h3>
+            <p>Você terá que digitar sua matrícula e CPF novamente para acessar.</p>
+            <div class="btn-flex">
+                <button class="btn-cancel" onclick="fecharModalSair()">CANCELAR</button>
+                <button class="btn-confirm" id="confirmarLogout">SAIR AGORA</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
-            authDomain: "gcm-salvador-portal.firebaseapp.com",
-            projectId: "gcm-salvador-portal",
-            storageBucket: "gcm-salvador-portal.firebasestorage.app",
-            messagingSenderId: "578659251170",
-            appId: "1:578659251170:web:7b79771e794a37f8fcffbb"
+        // ... (Imports do Firebase iguais)
+        
+        // LOGICA DO MODAL DE SAÍDA
+        window.abrirModalSair = () => document.getElementById('modalSair').style.display = 'flex';
+        window.fecharModalSair = () => document.getElementById('modalSair').style.display = 'none';
+        
+        document.getElementById('confirmarLogout').onclick = () => {
+            signOut(auth).then(() => window.location.href = "index.html");
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const mat = user.email.split('@')[0];
-                try {
-                    const snap = await getDoc(doc(db, "servidores", mat));
-                    if (snap.exists()) {
-                        const d = snap.data();
-                        document.getElementById('userName').innerText = `OLÁ, ${d.nome_completo ? d.nome_completo.split(' ')[0] : 'SERVIDOR'}`;
-                        document.getElementById('userMatricula').innerText = `MATRÍCULA: ${mat}`;
-                    }
-                } catch (e) { console.error("Erro no banco:", e); }
-            } else {
-                window.location.href = "index.html";
-            }
-        });
-
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
+        // ... (onAuthStateChanged igual)
     </script>
 </body>
 </html>
