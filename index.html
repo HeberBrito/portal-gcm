@@ -1,31 +1,193 @@
-<div class="input-group">
-    <label>Matrícula</label>
-    <input type="text" id="matricula" pattern="\[0-9]*" inputmode="numeric" placeholder="Somente números" required autofocus>
-</div>
-<div class="input-group">
-    <label>Senha (CPF)</label>
-    <input type="password" id="cpf" pattern="\[0-9]*" inputmode="numeric" placeholder="Somente números" required>
-    <i class="fas fa-eye toggle-password" id="toggleIcon"></i>
-</div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal GCM - Salvador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --accent: #fdbb2d;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
 
-<script type="module">
-    // ... (importações e config do Firebase permanecem iguais)
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('assets/fundo.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
 
-    // BLOQUEIO RIGOROSO DE LETRAS E SINAIS
-    const numericInputs = [document.getElementById('matricula'), document.getElementById('cpf')];
-    numericInputs.forEach(input => {
-        input.addEventListener('input', (e) => {
-            // Remove qualquer coisa que não seja número instantaneamente
-            e.target.value = e.target.value.replace(/\D/g, '');
+        .login-card {
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2); padding: 3rem 2rem; border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 90%; max-width: 380px; text-align: center;
+        }
+
+        .logo-gcm { width: 100px; margin-bottom: 1rem; }
+        h2 { margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: white; }
+        p { margin-bottom: 2rem; opacity: 0.8; color: white; font-size: 0.9rem; }
+
+        .input-group { margin-bottom: 1.2rem; text-align: left; position: relative; }
+        label { display: block; margin-bottom: 0.5rem; color: white; font-size: 0.8rem; font-weight: bold; }
+        
+        input {
+            width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.3); color: white; outline: none; box-sizing: border-box; font-size: 1rem;
+        }
+
+        .toggle-password {
+            position: absolute; right: 15px; top: 38px; color: rgba(255,255,255,0.6);
+            cursor: pointer; font-size: 1.1rem;
+        }
+
+        button {
+            width: 100%; padding: 1rem; border-radius: 12px; border: none;
+            background: white; color: var(--primary); font-weight: 800; cursor: pointer;
+            transition: 0.3s; text-transform: uppercase; margin-top: 1rem;
+        }
+
+        button:disabled { background: #ccc; opacity: 0.7; }
+
+        /* MODAL */
+        #customModal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; color: #333; padding: 2rem; border-radius: 20px; text-align: center;
+            max-width: 300px; width: 80%;
+        }
+        .modal-btn {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; margin-top: 15px; cursor: pointer; width: 100%;
+        }
+
+        .shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-10px);}
+            75% {transform: translateX(10px);}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card" id="loginCard">
+        <img src="assets/brasao.png" class="logo-gcm" alt="GCM">
+        <h2>Portal GCM</h2>
+        <p>Acesso Restrito ao Servidor</p>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Matrícula</label>
+                <input type="text" id="matricula" pattern="[0-9]*" inputmode="numeric" placeholder="Somente números" required autofocus>
+            </div>
+            <div class="input-group">
+                <label>Senha (CPF)</label>
+                <input type="password" id="cpf" pattern="[0-9]*" inputmode="numeric" placeholder="Somente números" required>
+                <i class="fas fa-eye toggle-password" id="toggleIcon"></i>
+            </div>
+            <button type="submit" id="btnEntrar">ENTRAR NO PORTAL</button>
+        </form>
+    </div>
+
+    <div id="customModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Aviso</h3>
+            <p id="modalMsg"></p>
+            <button class="modal-btn" id="closeBtn">OK</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
+            authDomain: "gcm-salvador-portal.firebaseapp.com",
+            projectId: "gcm-salvador-portal",
+            storageBucket: "gcm-salvador-portal.firebasestorage.app",
+            messagingSenderId: "578659251170",
+            appId: "1:578659251170:web:7b79771e794a37f8fcffbb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // MODAL LOGIC
+        const modal = document.getElementById('customModal');
+        const showModal = (title, msg) => {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
+            modal.style.display = 'flex';
+        };
+        document.getElementById('closeBtn').onclick = () => modal.style.display = 'none';
+
+        // VER/OCULTAR SENHA
+        const toggleIcon = document.getElementById('toggleIcon');
+        const passwordInput = document.getElementById('cpf');
+        toggleIcon.onclick = () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            toggleIcon.classList.toggle('fa-eye-slash');
+        };
+
+        // BLOQUEIO RIGOROSO DE LETRAS E EFEITO SHAKE
+        const numericInputs = [document.getElementById('matricula'), document.getElementById('cpf')];
+        numericInputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+
+            input.addEventListener('keydown', (e) => {
+                const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+                if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                    document.getElementById('loginCard').classList.add('shake');
+                    setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
+                }
+            });
         });
 
-        input.addEventListener('keydown', (e) => {
-            // Se tentar digitar letra, o card treme
-            if (!/[0-9]|Backspace|Tab|Enter|Delete|Arrow/.test(e.key)) {
-                document.getElementById('loginCard').classList.add('shake');
-                setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
+        // LOGIN E AUTO-CADASTRO
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mat = document.getElementById('matricula').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            
+            if (mat.length < 3 || cpf.length < 3) {
+                return showModal("Aviso", "Preencha os dados corretamente.");
+            }
+
+            // Firebase exige 6 dígitos mínimos. Completamos se for teste, mas CPF real já tem 11.
+            const senhaSegura = cpf.length < 6 ? cpf.padEnd(6, '0') : cpf;
+            const email = `${mat}@gcm.com`;
+            const btn = document.getElementById('btnEntrar');
+
+            btn.disabled = true;
+            btn.innerText = "VERIFICANDO...";
+
+            try {
+                await signInWithEmailAndPassword(auth, email, senhaSegura);
+                window.location.href = "painel.html";
+            } catch (error) {
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, senhaSegura);
+                        window.location.href = "painel.html";
+                    } catch (err) {
+                        document.getElementById('loginCard').classList.add('shake');
+                        showModal("Erro", "Falha na autenticação. Verifique sua matrícula e CPF.");
+                        setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
+                    }
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "ENTRAR NO PORTAL";
             }
         });
-    });
-    // ... (restante da lógica de login permanece igual)
-</script>
+    </script>
+</body>
+</html>
