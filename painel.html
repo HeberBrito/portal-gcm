@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Servidor - GCM Salvador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #1a2a6c; --accent: #fdbb2d; --glass: rgba(255, 255, 255, 0.15); }
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/fundo.jpg');
+            background-size: cover; background-attachment: fixed; color: white; min-height: 100vh;
+        }
+        nav {
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
+            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-info h2 { margin: 0; font-size: 1.2rem; }
+        .container { padding: 3rem 5%; }
+        .grid-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card {
+            background: var(--glass); backdrop-filter: blur(15px); padding: 2rem; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; text-decoration: none; color: white;
+        }
+        .card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.2); border-color: var(--accent); }
+        .card i { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
+        .btn-logout { background: #ff4b2b; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="user-info">
+            <h2 id="userName">CARREGANDO...</h2>
+            <p id="userMatricula">MATRÍCULA: ---</p>
+        </div>
+        <button class="btn-logout" id="btnLogout">SAIR</button>
+    </nav>
+
+    <div class="container">
+        <h1>O que deseja hoje?</h1>
+        <div class="grid-forms">
+            <div class="card"><i class="fas fa-hand-holding-usd"></i><h3>Financeiro</h3><p>Abonos e Adiantamentos.</p></div>
+            <div class="card"><i class="fas fa-briefcase"></i><h3>Carreira</h3><p>Progressões e Licenças.</p></div>
+            <div class="card"><i class="fas fa-user-nurse"></i><h3>Saúde</h3><p>Afastamentos e Médicos.</p></div>
+            <div class="card"><i class="fas fa-file-signature"></i><h3>Geral</h3><p>Outras solicitações via IA.</p></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
+            authDomain: "gcm-salvador-portal.firebaseapp.com",
+            projectId: "gcm-salvador-portal",
+            storageBucket: "gcm-salvador-portal.firebasestorage.app",
+            messagingSenderId: "578659251170",
+            appId: "1:578659251170:web:7b79771e794a37f8fcffbb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const matricula = user.email.split('@')[0];
+                const docSnap = await getDoc(doc(db, "servidores", matricula));
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    document.getElementById('userName').innerText = `OLÁ, ${d.nome_completo.split(' ')[0]}`;
+                    document.getElementById('userMatricula').innerText = `MATRÍCULA: ${d.matricula}`;
+                }
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        document.getElementById('btnLogout').onclick = () => signOut(auth);
+    </script>
+</body>
+</html>
