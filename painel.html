@@ -15,7 +15,7 @@
             overflow-x: hidden;
         }
 
-        /* BARRA DE NAVEGAÇÃO */
+        /* NAVEGAÇÃO */
         nav {
             background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
             padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center;
@@ -24,14 +24,14 @@
         .user-info h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
         .user-info p { margin: 0; font-size: 0.8rem; opacity: 0.7; }
         .btn-logout { 
-            background: rgba(255, 75, 43, 0.2); color: #ff4b2b; border: 1px solid #ff4b2b; 
+            background: rgba(255, 75, 43, 0.1); color: #ff4b2b; border: 1px solid #ff4b2b; 
             padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
         }
         .btn-logout:hover { background: #ff4b2b; color: white; }
 
         .container { padding: 2rem 5%; max-width: 1200px; margin: auto; }
 
-        /* BUSCA INTELIGENTE */
+        /* BUSCA */
         .search-container { margin-bottom: 3rem; text-align: center; }
         .search-bar {
             width: 100%; max-width: 600px; padding: 1.2rem 2rem; border-radius: 50px; 
@@ -39,29 +39,24 @@
             color: white; font-size: 1.1rem; outline: none; backdrop-filter: blur(10px);
             transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .search-bar:focus { border-color: var(--accent); background: rgba(255,255,255,0.2); width: 105%; }
+        .search-bar:focus { border-color: var(--accent); background: rgba(255,255,255,0.2); }
 
-        /* GRID DE CARDS */
+        /* GRID */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
         
         .card {
             background: var(--glass); backdrop-filter: blur(15px); padding: 2.5rem 2rem; 
             border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); 
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: 0.4s; text-align: center;
         }
-        .card:hover { transform: translateY(-12px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
-        .card i { font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem; transition: 0.3s; }
-        .card h3 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+        .card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.25); border-color: var(--accent); }
+        .card i { font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem; }
+        .card h3 { margin: 0; font-size: 1.5rem; }
         
-        /* Detalhes que aparecem no Hover */
-        .details { 
-            max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; 
-            color: #eee; margin-top: 0; line-height: 1.4;
-        }
+        .details { max-height: 0; opacity: 0; transition: 0.4s; font-size: 0.9rem; color: #eee; overflow: hidden; }
         .card:hover .details { max-height: 100px; opacity: 1; margin-top: 15px; }
 
-        /* MODAL DE SAÍDA */
+        /* MODAL SAÍDA */
         #modalSair {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center;
@@ -71,13 +66,19 @@
         .btn-confirm { background: #ff4b2b; color: white; border: none; padding: 12px; border-radius: 12px; flex: 1; cursor: pointer; font-weight: bold; }
         .btn-cancel { background: #eee; color: #333; border: none; padding: 12px; border-radius: 12px; flex: 1; cursor: pointer; }
 
-        @keyframes fadeInCard {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* STATUS DE CARREGAMENTO PDF */
+        #loadingOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 3000; flex-direction: column; align-items: center; justify-content: center;
         }
     </style>
 </head>
 <body>
+
+    <div id="loadingOverlay">
+        <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--accent);"></i>
+        <p style="margin-top: 15px; font-weight: bold;">Gerando seu formulário preenchido...</p>
+    </div>
 
     <nav>
         <div class="user-info">
@@ -90,41 +91,40 @@
     <div class="container">
         <div class="search-container">
             <input type="text" id="searchInput" class="search-bar" placeholder="🔍 O que você deseja solicitar hoje?">
-            <p style="font-size: 0.85rem; margin-top: 15px; opacity: 0.7;">Ex: "Férias", "Abono", "Dinheiro", "Saúde"...</p>
+            <p style="font-size: 0.85rem; margin-top: 15px; opacity: 0.7;">Ex: "RDV", "Abono", "Férias", "Promoção"...</p>
         </div>
 
         <div class="grid" id="gridCards">
-            <div class="card" data-tags="abono permanencia adiantamento gratificacao auxilio transporte dinheiro financeiro rdv rda">
+            <div class="card" id="cardFinanceiro" data-tags="abono permanencia adiantamento gratificacao auxilio transporte rdv">
                 <i class="fas fa-money-bill-wave"></i>
-                <h3>Financeiro</h3>
-                <div class="details">Solicite Abono de Permanência, Adiantamentos, Gratificações e Auxílios.</div>
+                <h3>Financeiro / RDV</h3>
+                <div class="details">Clique para gerar seu formulário de RDV preenchido automaticamente.</div>
             </div>
 
-            <div class="card" data-tags="progressao licenca vacancia estagio probatorio promocao carreira curso exoneração">
+            <div class="card" data-tags="progressao licenca vacancia estagio probatorio carreira">
                 <i class="fas fa-id-card"></i>
                 <h3>Carreira</h3>
-                <div class="details">Progressões, Licenças Especiais, Vacância e Estágio Probatório.</div>
+                <div class="details">Progressões, Licenças e Estágio Probatório.</div>
             </div>
 
-            <div class="card" data-tags="saude medico afastamento licenca premio hospital atestado rdv rda acompanhamento">
+            <div class="card" data-tags="saude medico afastamento atestado">
                 <i class="fas fa-heartbeat"></i>
                 <h3>Saúde</h3>
-                <div class="details">Licença prêmio, Afastamentos médicos e Saúde do Servidor.</div>
+                <div class="details">Afastamentos médicos e Saúde do Servidor.</div>
             </div>
 
-            <div class="card" data-tags="geral ia duvida outros requerimento ajuda rdv rda">
+            <div class="card" data-tags="geral ia duvida outros">
                 <i class="fas fa-magic"></i>
                 <h3>IA / Geral</h3>
-                <div class="details">Descreva sua necessidade em texto livre e eu preencho o formulário para você.</div>
+                <div class="details">Dúvidas sobre qual formulário usar? Pergunte aqui.</div>
             </div>
         </div>
     </div>
 
     <div id="modalSair">
         <div class="modal-box">
-            <i class="fas fa-sign-out-alt" style="font-size: 3rem; color: #ff4b2b; margin-bottom: 1rem;"></i>
             <h3 style="margin:0">Encerrar Sessão?</h3>
-            <p style="opacity: 0.7;">Você precisará entrar com sua matrícula e CPF novamente.</p>
+            <p style="opacity: 0.7;">Você precisará logar novamente.</p>
             <div class="btn-flex">
                 <button class="btn-cancel" id="btnCancelarSair">VOLTAR</button>
                 <button class="btn-confirm" id="btnConfirmarSair">SAIR AGORA</button>
@@ -136,6 +136,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        // MOTOR DE PDF
+        import { PDFDocument, rgb } from 'https://cdn.skypack.dev/pdf-lib';
 
         const firebaseConfig = {
             apiKey: "AIzaSyC23gdYyXTTFaShymYySFuKJBYgSbkamdY",
@@ -150,48 +153,79 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // BUSCA EM TEMPO REAL
-        const searchInput = document.getElementById('searchInput');
-        const cards = document.querySelectorAll('.card');
+        let dadosServidor = null;
 
-        searchInput.addEventListener('input', (e) => {
-            const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            cards.forEach(card => {
-                const tags = card.getAttribute('data-tags');
-                const titulo = card.querySelector('h3').innerText.toLowerCase();
-                if (tags.includes(termo) || titulo.includes(termo)) {
-                    card.style.display = "flex";
-                    card.style.animation = "fadeInCard 0.4s ease forwards";
-                } else {
-                    card.style.display = "none";
-                }
-            });
-        });
-
-        // IDENTIFICAÇÃO DO USUÁRIO
+        // IDENTIFICAÇÃO E PROTEÇÃO DE ROTA
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const mat = user.email.split('@')[0];
                 try {
                     const snap = await getDoc(doc(db, "servidores", mat));
                     if (snap.exists()) {
-                        const d = snap.data();
-                        document.getElementById('userName').innerText = `OLÁ, ${d.nome_completo ? d.nome_completo.split(' ')[0] : 'SERVIDOR'}`;
+                        dadosServidor = snap.data();
+                        document.getElementById('userName').innerText = `OLÁ, ${dadosServidor.nome_completo.split(' ')[0]}`;
                         document.getElementById('userMatricula').innerText = `MATRÍCULA: ${mat}`;
                     }
-                } catch (e) { console.error("Erro ao buscar dados:", e); }
+                } catch (e) { console.error(e); }
             } else {
                 window.location.href = "index.html";
             }
         });
 
-        // LÓGICA DO MODAL DE SAÍDA
-        const modal = document.getElementById('modalSair');
-        document.getElementById('btnSairNav').onclick = () => modal.style.display = 'flex';
-        document.getElementById('btnCancelarSair').onclick = () => modal.style.display = 'none';
-        document.getElementById('btnConfirmarSair').onclick = () => {
-            signOut(auth).then(() => window.location.href = "index.html");
-        };
+        // LÓGICA DE GERAÇÃO DO PDF
+        async function gerarRDV() {
+            if (!dadosServidor) return;
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+
+            try {
+                // Busca o modelo na pasta assets
+                const response = await fetch('assets/RDV.pdf');
+                if (!response.ok) throw new Error("Modelo RDV.pdf não encontrado na pasta assets.");
+                
+                const existingPdfBytes = await response.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(existingPdfBytes);
+                const page = pdfDoc.getPages()[0];
+                const { height } = page.getSize();
+
+                // MAPEAMENTO DE CAMPOS (Coordenadas iniciais para teste)
+                // Nome
+                page.drawText(dadosServidor.nome_completo || "", { x: 105, y: height - 152, size: 9 });
+                // Matrícula
+                page.drawText(dadosServidor.matricula || "", { x: 480, y: height - 152, size: 9 });
+                // CPF
+                page.drawText(dadosServidor.cpf || "", { x: 105, y: height - 170, size: 9 });
+                // Mãe
+                page.drawText(dadosServidor.mae || "", { x: 105, y: height - 190, size: 9 });
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `RDV_${dadosServidor.matricula}.pdf`;
+                link.click();
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // BUSCA EM TEMPO REAL
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const termo = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(card => {
+                const tags = card.getAttribute('data-tags');
+                card.style.display = tags.includes(termo) ? "block" : "none";
+            });
+        });
+
+        // EVENTOS DE CLIQUE
+        document.getElementById('cardFinanceiro').onclick = () => gerarRDV();
+        document.getElementById('btnSairNav').onclick = () => document.getElementById('modalSair').style.display = 'flex';
+        document.getElementById('btnCancelarSair').onclick = () => document.getElementById('modalSair').style.display = 'none';
+        document.getElementById('btnConfirmarSair').onclick = () => signOut(auth);
+
     </script>
 </body>
 </html>
