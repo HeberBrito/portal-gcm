@@ -6,91 +6,58 @@
     <title>Portal GCM - Salvador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #1a2a6c;
-            --accent: #fdbb2d;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
-
+        :root { --primary: #1a2a6c; --accent: #fdbb2d; --glass: rgba(255, 255, 255, 0.1); }
         body {
             margin: 0; font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('assets/fundo.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
             height: 100vh; display: flex; align-items: center; justify-content: center;
         }
-
         .login-card {
-            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.2); padding: 3rem 2rem; border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 90%; max-width: 380px; text-align: center;
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);
+            padding: 3rem 2rem; border-radius: 25px; width: 90%; max-width: 380px; text-align: center;
         }
-
         .logo-gcm { width: 100px; margin-bottom: 1rem; }
-        h2 { margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: white; }
-        p { margin-bottom: 2rem; opacity: 0.8; color: white; font-size: 0.9rem; }
-
+        h2 { margin: 0; color: white; text-transform: uppercase; letter-spacing: 2px; }
+        p { color: white; opacity: 0.8; font-size: 0.9rem; margin-bottom: 2rem; }
         .input-group { margin-bottom: 1.2rem; text-align: left; position: relative; }
         label { display: block; margin-bottom: 0.5rem; color: white; font-size: 0.8rem; font-weight: bold; }
-        
         input {
             width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(0,0,0,0.3); color: white; outline: none; box-sizing: border-box; font-size: 1rem;
+            background: rgba(0,0,0,0.3); color: white; outline: none; box-sizing: border-box;
         }
-
-        /* Estilo do botão de ver senha */
-        .toggle-password {
-            position: absolute; right: 15px; top: 38px; color: rgba(255,255,255,0.6);
-            cursor: pointer; font-size: 1.1rem;
-        }
-
+        .toggle-password { position: absolute; right: 15px; top: 38px; color: white; cursor: pointer; opacity: 0.6; }
         button {
-            width: 100%; padding: 1rem; border-radius: 12px; border: none;
-            background: white; color: var(--primary); font-weight: 800; cursor: pointer;
-            transition: 0.3s; text-transform: uppercase; margin-top: 1rem;
+            width: 100%; padding: 1rem; border-radius: 12px; border: none; background: white;
+            color: var(--primary); font-weight: 800; cursor: pointer; transition: 0.3s;
         }
-
-        button:disabled { background: #ccc; opacity: 0.7; }
-
-        /* MODAL */
         #customModal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center;
         }
-        .modal-content {
-            background: white; color: #333; padding: 2rem; border-radius: 20px; text-align: center;
-            max-width: 300px; width: 80%;
-        }
-        .modal-btn {
-            background: var(--primary); color: white; border: none; padding: 10px 20px;
-            border-radius: 8px; margin-top: 15px; cursor: pointer; width: 100%;
-        }
-
+        .modal-content { background: white; padding: 2rem; border-radius: 20px; text-align: center; max-width: 300px; }
+        .modal-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; width: 100%; cursor: pointer; }
         .shake { animation: shake 0.4s; }
-        @keyframes shake {
-            0%, 100% {transform: translateX(0);}
-            25% {transform: translateX(-10px);}
-            75% {transform: translateX(10px);}
-        }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
     </style>
 </head>
 <body>
 
     <div class="login-card" id="loginCard">
-        <img src="assets/brasao.png" class="logo-gcm" alt="GCM">
+        <img src="assets/brasao.png" class="logo-gcm">
         <h2>Portal GCM</h2>
-        <p>Acesso Restrito ao Servidor</p>
-
+        <p>Acesso Restrito</p>
         <form id="loginForm">
             <div class="input-group">
                 <label>Matrícula</label>
-                <input type="text" id="matricula" inputmode="numeric" placeholder="Somente números" required autofocus>
+                <input type="text" id="matricula" inputmode="numeric" required placeholder="Somente números">
             </div>
             <div class="input-group">
                 <label>Senha (CPF)</label>
-                <input type="password" id="cpf" inputmode="numeric" placeholder="Somente números" required>
+                <input type="password" id="cpf" inputmode="numeric" required placeholder="Somente números">
                 <i class="fas fa-eye toggle-password" id="toggleIcon"></i>
             </div>
-            <button type="submit" id="btnEntrar">ENTRAR NO PORTAL</button>
+            <button type="submit" id="btnEntrar">ENTRAR</button>
         </form>
     </div>
 
@@ -118,72 +85,49 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // MODAL LOGIC
-        const modal = document.getElementById('customModal');
-        const showModal = (title, msg) => {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMsg').innerText = msg;
-            modal.style.display = 'flex';
+        const showModal = (t, m) => {
+            document.getElementById('modalTitle').innerText = t;
+            document.getElementById('modalMsg').innerText = m;
+            document.getElementById('customModal').style.display = 'flex';
         };
-        document.getElementById('closeBtn').onclick = () => modal.style.display = 'none';
 
-        // VER/OCULTAR SENHA
-        const toggleIcon = document.getElementById('toggleIcon');
-        const passwordInput = document.getElementById('cpf');
-        toggleIcon.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            toggleIcon.classList.toggle('fa-eye-slash');
-        });
+        document.getElementById('closeBtn').onclick = () => document.getElementById('customModal').style.display = 'none';
 
-        // TRAVA DE TECLADO (NÚMEROS APENAS)
-        const lockInput = (el) => {
-            el.addEventListener('keypress', (e) => {
-                if (!/[0-9]/.test(e.key)) e.preventDefault();
-            });
+        document.getElementById('toggleIcon').onclick = () => {
+            const input = document.getElementById('cpf');
+            const type = input.type === 'password' ? 'text' : 'password';
+            input.type = type;
+            document.getElementById('toggleIcon').classList.toggle('fa-eye-slash');
         };
-        lockInput(document.getElementById('matricula'));
-        lockInput(document.getElementById('cpf'));
 
-        // LOGIN E AUTO-CADASTRO
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             const mat = document.getElementById('matricula').value.trim();
-            let cpf = document.getElementById('cpf').value.replace(/\D/g, '');
-            
-            if (mat.length < 3 || cpf.length < 3) {
-                return showModal("Aviso", "Preencha os dados corretamente.");
-            }
-
-            // O Firebase exige 6 dígitos mínimos para senha
-            const senhaSegura = cpf.length < 6 ? cpf.padEnd(6, '0') : cpf;
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const email = `${mat}@gcm.com`;
+            const pass = cpf.length < 6 ? cpf.padEnd(6, '0') : cpf;
             const btn = document.getElementById('btnEntrar');
 
             btn.disabled = true;
             btn.innerText = "VERIFICANDO...";
 
             try {
-                // Tenta logar
-                await signInWithEmailAndPassword(auth, email, senhaSegura);
+                await signInWithEmailAndPassword(auth, email, pass);
                 window.location.href = "painel.html";
-            } catch (error) {
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    // Se não existe, tenta criar (Primeiro Acesso)
-                    try {
-                        await createUserWithEmailAndPassword(auth, email, senhaSegura);
-                        window.location.href = "painel.html";
-                    } catch (err) {
-                        document.getElementById('loginCard').classList.add('shake');
-                        showModal("Erro", "Falha na autenticação. Verifique sua matrícula e CPF.");
-                        setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
-                    }
+            } catch (err) {
+                try {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                    window.location.href = "painel.html";
+                } catch (e2) {
+                    document.getElementById('loginCard').classList.add('shake');
+                    showModal("Erro", "Dados inválidos ou erro de conexão.");
+                    setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
                 }
             } finally {
                 btn.disabled = false;
-                btn.innerText = "ENTRAR NO PORTAL";
+                btn.innerText = "ENTRAR";
             }
-        });
+        };
     </script>
 </body>
 </html>
